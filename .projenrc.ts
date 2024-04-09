@@ -22,6 +22,9 @@ const project = new awscdk.AwsCdkConstructLibrary({
   jsiiVersion: '~5.0.0',
   cdkVersion: '2.1.0',
   jest: true,
+  jestOptions: {
+    configFilePath: 'jest.config.json',
+  },
   eslint: true,
   eslintOptions: { dirs: ['src', 'test'], prettier: true },
   prettier: true,
