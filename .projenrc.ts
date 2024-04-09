@@ -1,6 +1,11 @@
 import { awscdk } from 'projen';
 
-const dependencies = ['constructs', 'openapi-types', 'aws-cdk-lib'];
+const dependencies = [
+  'constructs',
+  'openapi-types',
+  'ts-json-schema-generator',
+  'aws-cdk-lib',
+];
 
 const project = new awscdk.AwsCdkConstructLibrary({
   name: 'aws-construct-openapi',
