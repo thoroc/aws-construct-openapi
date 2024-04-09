@@ -95,6 +95,10 @@
       "type": "peer"
     },
     {
+      "name": "openapi-types",
+      "type": "peer"
+    },
+    {
       "name": "aws-cdk-lib",
       "type": "runtime"
     },
