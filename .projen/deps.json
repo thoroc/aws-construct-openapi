@@ -1,6 +1,10 @@
 {
   "dependencies": [
     {
+      "name": "@types/fs-extra",
+      "type": "build"
+    },
+    {
       "name": "@types/jest",
       "type": "build"
     },
@@ -46,6 +50,10 @@
     {
       "name": "eslint",
       "version": "^8",
+      "type": "build"
+    },
+    {
+      "name": "fs-extra",
       "type": "build"
     },
     {
@@ -110,7 +118,7 @@
     },
     {
       "name": "aws-cdk-lib",
-      "version": "^2.1.0",
+      "version": "^2.136.0",
       "type": "peer"
     },
     {

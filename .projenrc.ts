@@ -20,7 +20,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
 
   projenrcTs: true,
   jsiiVersion: '~5.0.0',
-  cdkVersion: '2.1.0',
+  cdkVersion: '2.136.0',
   jest: true,
   jestOptions: {
     configFilePath: 'jest.config.json',
@@ -33,7 +33,13 @@ const project = new awscdk.AwsCdkConstructLibrary({
   },
   deps: dependencies,
   peerDeps: dependencies,
-  devDeps: ['aws-cdk-lib', 'sinon', '@types/sinon'],
+  devDeps: [
+    'aws-cdk-lib',
+    'sinon',
+    '@types/sinon',
+    'fs-extra',
+    '@types/fs-extra',
+  ],
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
   // devDeps: [],             /* Build dependencies for this module. */
   // packageName: undefined,  /* The "name" in package.json. */

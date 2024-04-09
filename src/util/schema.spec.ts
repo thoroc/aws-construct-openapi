@@ -1,13 +1,13 @@
-import * as fs from 'fs';
 import * as path from 'path';
 import {
   JsonSchema,
   JsonSchemaType,
-  JsonSchemaVersion,
+  // JsonSchemaVersion,
 } from 'aws-cdk-lib/aws-apigateway';
-import * as sinon from 'sinon';
-import { Config, createGenerator } from 'ts-json-schema-generator';
-import * as schema from './schema';
+import * as fs from 'fs-extra';
+// import * as sinon from 'sinon';
+// import { Config, createGenerator } from 'ts-json-schema-generator';
+// import * as schema from './schema';
 import {
   apiToSpec,
   getConfig,
@@ -273,172 +273,88 @@ describe('apiToSpec', () => {
 });
 
 describe('getSchemas', () => {
-  const tsconfigPath = 'tsconfig.json';
-  const modelPath = '/path/to/models';
+  const tsconfigPath = 'tsconfig.dev.json';
   const restApi = 'myRestApi';
-  const models = [new fs.Dirent(), new fs.Dirent()];
+  const rootTmpPath = '/tmp/aws-construct-openapi';
+  const tmpPath = `${rootTmpPath}/src/models`;
 
-  beforeEach(() => {
-    sinon.stub(fs, 'readdirSync').returns(models);
-    // jest
-    //   .spyOn(fs, 'readdirSync')
-    //   .mockReturnValue([new fs.Dirent(), new fs.Dirent()]);
-    // jest
-    //   .spyOn(path, 'join')
-    //   .mockImplementation((...paths: string[]) => paths.join('/'));
-    jest
-      .spyOn(schema, 'getConfig')
-      .mockImplementation((tsconfig, filePath) => ({
-        path: filePath,
-        tsconfig,
-        type: '*',
-        createSchema: jest.fn().mockReturnValue({
-          definitions: {
-            Interface1: {
-              type: 'object',
-              properties: {
-                id: { type: 'string' },
-                name: { type: 'string' },
-              },
-            },
-            Interface2: {
-              type: 'object',
-              properties: {
-                id: { type: 'number' },
-                age: { type: 'number' },
-              },
-            },
-          },
-        }),
-      }));
-    jest
-      .spyOn(schema, 'interfaceTemplate')
-      .mockImplementation((interfaceName, schemaProps) => ({
-        contentType: 'application/json',
-        modelName: `${interfaceName}Model`,
-        schema: {
-          type: JsonSchemaType.OBJECT,
-          properties: schemaProps.properties,
-          schema: JsonSchemaVersion.DRAFT4,
-          title: `${interfaceName}Model`,
-        },
-      }));
-    jest.spyOn(schema, 'updateApiRefs').mockImplementation((obj, api) => {
-      if (hasRef(obj)) {
-        obj.ref = `https://apigateway.amazonaws.com/restapis/${api}/models/${obj.$ref}Model`;
-        delete obj.$ref;
-      }
-    });
+  beforeAll(() => {
+    const modelsPath = path.join(__dirname, '..', 'models');
+    fs.mkdirSync(tmpPath, { recursive: true });
+    fs.copyFileSync(
+      path.join(modelsPath, 'basic.ts'),
+      path.join(tmpPath, 'basic.ts'),
+    );
+    fs.copyFileSync(
+      path.join(modelsPath, 'advanced.ts'),
+      path.join(tmpPath, 'advanced.ts'),
+    );
+    fs.copyFileSync(
+      path.join(modelsPath, 'response.ts'),
+      path.join(tmpPath, 'response.ts'),
+    );
+    fs.copyFileSync(
+      path.join(__dirname, '..', '..', 'tsconfig.dev.json'),
+      path.join(rootTmpPath, 'tsconfig.dev.json'),
+    );
   });
 
-  afterEach(() => {
-    jest.restoreAllMocks();
+  afterAll(() => {
+    fs.removeSync(rootTmpPath);
   });
 
   it('should return the correct schemas', () => {
     const expectedSchemas = {
-      Interface1: {
+      Advanced: {
         contentType: 'application/json',
-        modelName: 'Interface1Model',
+        modelName: 'AdvancedModel',
         schema: {
           type: 'object',
           properties: {
-            id: { type: 'string' },
-            name: { type: 'string' },
+            basic: {
+              ref: 'https://apigateway.amazonaws.com/restapis/myRestApi/models/BasicModel',
+            },
+            greeting: { type: 'string' },
+            postfix: { type: 'string' },
           },
+          required: ['greeting', 'basic'],
           schema: 'http://json-schema.org/draft-07/schema#',
-          title: 'Interface1Model',
+          title: 'AdvancedModel',
         },
       },
-      Interface2: {
+      Basic: {
         contentType: 'application/json',
-        modelName: 'Interface2Model',
+        modelName: 'BasicModel',
         schema: {
           type: 'object',
           properties: {
-            id: { type: 'number' },
-            age: { type: 'number' },
+            someNumber: { type: 'number' },
+            someString: { type: 'string' },
           },
+          required: ['someString', 'someNumber'],
           schema: 'http://json-schema.org/draft-07/schema#',
-          title: 'Interface2Model',
+          title: 'BasicModel',
+        },
+      },
+      Response: {
+        contentType: 'application/json',
+        modelName: 'ResponseModel',
+        schema: {
+          properties: {
+            message: {
+              type: 'string',
+            },
+          },
+          required: ['message'],
+          schema: 'http://json-schema.org/draft-07/schema#',
+          title: 'ResponseModel',
+          type: 'object',
         },
       },
     };
 
-    const result = getSchemas(tsconfigPath, modelPath, restApi);
+    const result = getSchemas(tsconfigPath, tmpPath, restApi);
 
     expect(result).toEqual(expectedSchemas);
-  });
-
-  it('should call the necessary functions with the correct arguments', () => {
-    getSchemas(tsconfigPath, modelPath, restApi);
-
-    expect(fs.readdirSync).toHaveBeenCalledWith(modelPath);
-    expect(path.join).toHaveBeenCalledWith(modelPath, 'interface1.ts');
-    expect(path.join).toHaveBeenCalledWith(modelPath, 'interface2.ts');
-    expect(getConfig).toHaveBeenCalledWith(
-      tsconfigPath,
-      '/path/to/models/interface1.ts',
-    );
-    expect(getConfig).toHaveBeenCalledWith(
-      tsconfigPath,
-      '/path/to/models/interface2.ts',
-    );
-    expect(createGenerator).toHaveBeenCalledWith({
-      path: '/path/to/models/interface1.ts',
-      tsconfig: tsconfigPath,
-      type: '*',
-    });
-    expect(createGenerator).toHaveBeenCalledWith({
-      path: '/path/to/models/interface2.ts',
-      tsconfig: tsconfigPath,
-      type: '*',
-    });
-    expect(createGenerator({} as Config).createSchema).toHaveBeenCalledTimes(2);
-    expect(interfaceTemplate).toHaveBeenCalledWith('Interface1', {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        name: { type: 'string' },
-      },
-    });
-    expect(interfaceTemplate).toHaveBeenCalledWith('Interface2', {
-      type: 'object',
-      properties: {
-        id: { type: 'number' },
-        age: { type: 'number' },
-      },
-    });
-    expect(updateApiRefs).toHaveBeenCalledWith(
-      {
-        Interface1: {
-          contentType: 'application/json',
-          modelName: 'Interface1Model',
-          schema: {
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              name: { type: 'string' },
-            },
-            schema: 'http://json-schema.org/draft-07/schema#',
-            title: 'Interface1Model',
-          },
-        },
-        Interface2: {
-          contentType: 'application/json',
-          modelName: 'Interface2Model',
-          schema: {
-            type: 'object',
-            properties: {
-              id: { type: 'number' },
-              age: { type: 'number' },
-            },
-            schema: 'http://json-schema.org/draft-07/schema#',
-            title: 'Interface2Model',
-          },
-        },
-      },
-      restApi,
-    );
   });
 });
