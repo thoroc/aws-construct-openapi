@@ -1,7 +1,12 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import { JsonSchema, JsonSchemaType } from 'aws-cdk-lib/aws-apigateway';
+import { Config, createGenerator } from 'ts-json-schema-generator';
+import * as schema from './schema';
 import {
   apiToSpec,
   getConfig,
+  getSchemas,
   hasAdditionalProperties,
   hasRef,
   interfaceTemplate,
@@ -42,7 +47,7 @@ describe('interfaceTemplate', () => {
 describe('getConfig', () => {
   it('should return the correct config object', () => {
     const tsconfig = 'tsconfig.json';
-    const path = '/path/to/file';
+    const pathToFile = '/path/to/file';
 
     const expectedConfig = {
       path: '/path/to/file',
@@ -50,7 +55,7 @@ describe('getConfig', () => {
       type: '*',
     };
 
-    const result = getConfig(tsconfig, path);
+    const result = getConfig(tsconfig, pathToFile);
 
     expect(result).toEqual(expectedConfig);
   });
@@ -259,5 +264,173 @@ describe('apiToSpec', () => {
         $ref: '#/components/schemas/nestedRef',
       },
     });
+  });
+});
+
+describe('getSchemas', () => {
+  const tsconfigPath = 'tsconfig.json';
+  const modelPath = '/path/to/models';
+  const restApi = 'myRestApi';
+
+  beforeEach(() => {
+    jest
+      .spyOn(fs, 'readdirSync')
+      .mockReturnValue([new fs.Dirent(), new fs.Dirent()]);
+    jest
+      .spyOn(path, 'join')
+      .mockImplementation((...paths: string[]) => paths.join('/'));
+    jest
+      .spyOn(schema, 'getConfig')
+      .mockImplementation((tsconfig, filePath) => ({
+        path: filePath,
+        tsconfig,
+        type: '*',
+      }));
+    jest.spyOn(schema, 'validMethodName').mockReturnValue({
+      createSchema: jest.fn().mockReturnValue({
+        definitions: {
+          Interface1: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+            },
+          },
+          Interface2: {
+            type: 'object',
+            properties: {
+              id: { type: 'number' },
+              age: { type: 'number' },
+            },
+          },
+        },
+      }),
+    });
+    jest
+      .spyOn(schema, 'interfaceTemplate')
+      .mockImplementation((interfaceName, schemaProps) => ({
+        contentType: 'application/json',
+        modelName: `${interfaceName}Model`,
+        schema: {
+          type: 'object',
+          properties: schemaProps.properties,
+          schema: 'http://json-schema.org/draft-07/schema#',
+          title: `${interfaceName}Model`,
+        },
+      }));
+    jest.spyOn(schema, 'updateApiRefs').mockImplementation((obj, api) => {
+      // Mock implementation
+    });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('should return the correct schemas', () => {
+    const expectedSchemas = {
+      Interface1: {
+        contentType: 'application/json',
+        modelName: 'Interface1Model',
+        schema: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            name: { type: 'string' },
+          },
+          schema: 'http://json-schema.org/draft-07/schema#',
+          title: 'Interface1Model',
+        },
+      },
+      Interface2: {
+        contentType: 'application/json',
+        modelName: 'Interface2Model',
+        schema: {
+          type: 'object',
+          properties: {
+            id: { type: 'number' },
+            age: { type: 'number' },
+          },
+          schema: 'http://json-schema.org/draft-07/schema#',
+          title: 'Interface2Model',
+        },
+      },
+    };
+
+    const result = getSchemas(tsconfigPath, modelPath, restApi);
+
+    expect(result).toEqual(expectedSchemas);
+  });
+
+  it('should call the necessary functions with the correct arguments', () => {
+    getSchemas(tsconfigPath, modelPath, restApi);
+
+    expect(fs.readdirSync).toHaveBeenCalledWith(modelPath);
+    expect(path.join).toHaveBeenCalledWith(modelPath, 'interface1.ts');
+    expect(path.join).toHaveBeenCalledWith(modelPath, 'interface2.ts');
+    expect(getConfig).toHaveBeenCalledWith(
+      tsconfigPath,
+      '/path/to/models/interface1.ts',
+    );
+    expect(getConfig).toHaveBeenCalledWith(
+      tsconfigPath,
+      '/path/to/models/interface2.ts',
+    );
+    expect(createGenerator).toHaveBeenCalledWith({
+      path: '/path/to/models/interface1.ts',
+      tsconfig: tsconfigPath,
+      type: '*',
+    });
+    expect(createGenerator).toHaveBeenCalledWith({
+      path: '/path/to/models/interface2.ts',
+      tsconfig: tsconfigPath,
+      type: '*',
+    });
+    expect(createGenerator({} as Config).createSchema).toHaveBeenCalledTimes(2);
+    expect(interfaceTemplate).toHaveBeenCalledWith('Interface1', {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        name: { type: 'string' },
+      },
+    });
+    expect(interfaceTemplate).toHaveBeenCalledWith('Interface2', {
+      type: 'object',
+      properties: {
+        id: { type: 'number' },
+        age: { type: 'number' },
+      },
+    });
+    expect(updateApiRefs).toHaveBeenCalledWith(
+      {
+        Interface1: {
+          contentType: 'application/json',
+          modelName: 'Interface1Model',
+          schema: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+            },
+            schema: 'http://json-schema.org/draft-07/schema#',
+            title: 'Interface1Model',
+          },
+        },
+        Interface2: {
+          contentType: 'application/json',
+          modelName: 'Interface2Model',
+          schema: {
+            type: 'object',
+            properties: {
+              id: { type: 'number' },
+              age: { type: 'number' },
+            },
+            schema: 'http://json-schema.org/draft-07/schema#',
+            title: 'Interface2Model',
+          },
+        },
+      },
+      restApi,
+    );
   });
 });
