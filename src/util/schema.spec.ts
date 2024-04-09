@@ -1,6 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { JsonSchema, JsonSchemaType } from 'aws-cdk-lib/aws-apigateway';
+import {
+  JsonSchema,
+  JsonSchemaType,
+  JsonSchemaVersion,
+} from 'aws-cdk-lib/aws-apigateway';
+import * as sinon from 'sinon';
 import { Config, createGenerator } from 'ts-json-schema-generator';
 import * as schema from './schema';
 import {
@@ -271,55 +276,58 @@ describe('getSchemas', () => {
   const tsconfigPath = 'tsconfig.json';
   const modelPath = '/path/to/models';
   const restApi = 'myRestApi';
+  const models = [new fs.Dirent(), new fs.Dirent()];
 
   beforeEach(() => {
-    jest
-      .spyOn(fs, 'readdirSync')
-      .mockReturnValue([new fs.Dirent(), new fs.Dirent()]);
-    jest
-      .spyOn(path, 'join')
-      .mockImplementation((...paths: string[]) => paths.join('/'));
+    sinon.stub(fs, 'readdirSync').returns(models);
+    // jest
+    //   .spyOn(fs, 'readdirSync')
+    //   .mockReturnValue([new fs.Dirent(), new fs.Dirent()]);
+    // jest
+    //   .spyOn(path, 'join')
+    //   .mockImplementation((...paths: string[]) => paths.join('/'));
     jest
       .spyOn(schema, 'getConfig')
       .mockImplementation((tsconfig, filePath) => ({
         path: filePath,
         tsconfig,
         type: '*',
+        createSchema: jest.fn().mockReturnValue({
+          definitions: {
+            Interface1: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                name: { type: 'string' },
+              },
+            },
+            Interface2: {
+              type: 'object',
+              properties: {
+                id: { type: 'number' },
+                age: { type: 'number' },
+              },
+            },
+          },
+        }),
       }));
-    jest.spyOn(schema, 'validMethodName').mockReturnValue({
-      createSchema: jest.fn().mockReturnValue({
-        definitions: {
-          Interface1: {
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              name: { type: 'string' },
-            },
-          },
-          Interface2: {
-            type: 'object',
-            properties: {
-              id: { type: 'number' },
-              age: { type: 'number' },
-            },
-          },
-        },
-      }),
-    });
     jest
       .spyOn(schema, 'interfaceTemplate')
       .mockImplementation((interfaceName, schemaProps) => ({
         contentType: 'application/json',
         modelName: `${interfaceName}Model`,
         schema: {
-          type: 'object',
+          type: JsonSchemaType.OBJECT,
           properties: schemaProps.properties,
-          schema: 'http://json-schema.org/draft-07/schema#',
+          schema: JsonSchemaVersion.DRAFT4,
           title: `${interfaceName}Model`,
         },
       }));
     jest.spyOn(schema, 'updateApiRefs').mockImplementation((obj, api) => {
-      // Mock implementation
+      if (hasRef(obj)) {
+        obj.ref = `https://apigateway.amazonaws.com/restapis/${api}/models/${obj.$ref}Model`;
+        delete obj.$ref;
+      }
     });
   });
 
