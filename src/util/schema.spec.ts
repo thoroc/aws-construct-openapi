@@ -4,6 +4,7 @@ import {
   hasAdditionalProperties,
   hasRef,
   interfaceTemplate,
+  updateApiRefs,
 } from './schema';
 
 describe('interfaceTemplate', () => {
@@ -135,5 +136,79 @@ describe('hasAdditionalProperties', () => {
     // Test case 3: String input
     const obj3 = 'test';
     expect(hasAdditionalProperties(obj3)).toBe(false);
+  });
+});
+
+describe('updateApiRefs', () => {
+  it('should update the $ref property and add the ref property', () => {
+    const obj = {
+      $ref: 'someRef',
+    };
+    const restApi = 'myRestApi';
+
+    updateApiRefs(obj, restApi);
+
+    expect(obj).toEqual({
+      ref: 'https://apigateway.amazonaws.com/restapis/myRestApi/models/someRefModel',
+    });
+  });
+
+  it('should delete the $ref property if it exists', () => {
+    const obj = {
+      $ref: 'someRef',
+    };
+    const restApi = 'myRestApi';
+
+    updateApiRefs(obj, restApi);
+
+    expect(obj).not.toHaveProperty('$ref');
+  });
+
+  it('should delete the additionalProperties property if it exists', () => {
+    const obj = {
+      additionalProperties: true,
+    };
+    const restApi = 'myRestApi';
+
+    updateApiRefs(obj, restApi);
+
+    expect(obj).not.toHaveProperty('additionalProperties');
+  });
+
+  it('should recursively update the $ref property and add the ref property', () => {
+    const obj = {
+      $ref: 'someRef',
+      nested: {
+        $ref: 'nestedRef',
+      },
+    };
+    const restApi = 'myRestApi';
+
+    updateApiRefs(obj, restApi);
+
+    expect(obj).toEqual({
+      ref: 'https://apigateway.amazonaws.com/restapis/myRestApi/models/someRefModel',
+      nested: {
+        ref: 'https://apigateway.amazonaws.com/restapis/myRestApi/models/nestedRefModel',
+      },
+    });
+  });
+
+  it('should not modify the object if it is not an object', () => {
+    const obj = 'notAnObject';
+    const restApi = 'myRestApi';
+
+    updateApiRefs(obj, restApi);
+
+    expect(obj).toBe('notAnObject');
+  });
+
+  it('should not modify the object if it is null', () => {
+    const obj = null;
+    const restApi = 'myRestApi';
+
+    updateApiRefs(obj, restApi);
+
+    expect(obj).toBeNull();
   });
 });
