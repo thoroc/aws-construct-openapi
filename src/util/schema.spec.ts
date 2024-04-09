@@ -1,5 +1,5 @@
 import { JsonSchema, JsonSchemaType } from 'aws-cdk-lib/aws-apigateway';
-import { interfaceTemplate } from './schema';
+import { getConfig, interfaceTemplate } from './schema';
 
 describe('interfaceTemplate', () => {
   it('should return the correct ModelOptions', () => {
@@ -29,5 +29,22 @@ describe('interfaceTemplate', () => {
     const result = interfaceTemplate(interfaceName, schemaProps);
 
     expect(result).toEqual(expectedModelOptions);
+  });
+});
+
+describe('getConfig', () => {
+  it('should return the correct config object', () => {
+    const tsconfig = 'tsconfig.json';
+    const path = '/path/to/file';
+
+    const expectedConfig = {
+      path: '/path/to/file',
+      tsconfig: 'tsconfig.json',
+      type: '*',
+    };
+
+    const result = getConfig(tsconfig, path);
+
+    expect(result).toEqual(expectedConfig);
   });
 });

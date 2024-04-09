@@ -7,7 +7,7 @@ import {
 } from 'aws-cdk-lib/aws-apigateway';
 import { createGenerator } from 'ts-json-schema-generator';
 
-const interfaceTemplate = (
+export const interfaceTemplate = (
   interfaceName: string,
   schemaProps: JsonSchema,
 ): ModelOptions => ({
@@ -20,13 +20,15 @@ const interfaceTemplate = (
   },
 });
 
-const getConfig = (tsconfig: string, path: string) => ({
+export const getConfig = (tsconfig: string, path: string) => ({
   path,
   tsconfig,
   type: '*',
 });
 
-const hasRef = (obj: unknown): obj is { ref?: string; $ref?: string } => {
+export const hasRef = (
+  obj: unknown,
+): obj is { ref?: string; $ref?: string } => {
   return (
     !!obj &&
     typeof obj === 'object' &&
@@ -35,7 +37,7 @@ const hasRef = (obj: unknown): obj is { ref?: string; $ref?: string } => {
   );
 };
 
-const hasAdditionalProperties = (
+export const hasAdditionalProperties = (
   obj: unknown,
 ): obj is { additionalProperties?: unknown } => {
   return (
