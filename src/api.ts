@@ -111,7 +111,7 @@ export class OpenApiConstruct extends Construct {
     this.schemas = getSchemas(
       `${props.tsconfigPath}`,
       `${props.models}`,
-      this.restApi.restApiId
+      this.restApi.restApiId,
     );
 
     this.models = {};
@@ -158,7 +158,7 @@ export class OpenApiConstruct extends Construct {
     }
     this.models[modelName] = this.restApi.addModel(
       (modelSchema as { modelName: string }).modelName,
-      modelSchema as ModelOptions
+      modelSchema as ModelOptions,
     );
     const modelProps = (
       modelSchema.schema as { properties: JsonSchema['properties'] }
@@ -184,7 +184,7 @@ export class OpenApiConstruct extends Construct {
       if (!(tempPath in this.resources)) {
         if (j === 2) {
           this.resources[tempPath] = this.restApi.root.addResource(
-            splitPath[j - 1]
+            splitPath[j - 1],
           );
         } else {
           this.resources[tempPath] = this.resources[
@@ -229,7 +229,7 @@ export class OpenApiConstruct extends Construct {
       security: Object.keys(this.openApiSpec.components.securitySchemes).map(
         (security) => ({
           [security]: [],
-        })
+        }),
       ),
     };
     if (validateBody) {
@@ -246,7 +246,7 @@ export class OpenApiConstruct extends Construct {
         }
         this.addModel(
           pathProps.requestModels[c],
-          this.schemas[pathProps.requestModels[c]]
+          this.schemas[pathProps.requestModels[c]],
         );
         (
           this.openApiSpec.paths[path][method.toLowerCase()] as {
@@ -319,14 +319,14 @@ export class OpenApiConstruct extends Construct {
               };
               this.addModel(
                 methodResponse.responseModels[c],
-                this.schemas[methodResponse.responseModels[c]]
+                this.schemas[methodResponse.responseModels[c]],
               );
               return {
                 ...p,
                 [c]: this.models[methodResponse.responseModels[c]],
               };
             },
-            {}
+            {},
           ),
         };
       }),
@@ -335,7 +335,7 @@ export class OpenApiConstruct extends Construct {
     this.resources[path].addMethod(
       method,
       new LambdaIntegration(pathProps.lambda),
-      methodProps
+      methodProps,
     );
   }
 

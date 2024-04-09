@@ -9,7 +9,7 @@ import { createGenerator } from 'ts-json-schema-generator';
 
 const interfaceTemplate = (
   interfaceName: string,
-  schemaProps: JsonSchema
+  schemaProps: JsonSchema,
 ): ModelOptions => ({
   contentType: 'application/json',
   modelName: `${interfaceName}Model`,
@@ -36,7 +36,7 @@ const hasRef = (obj: unknown): obj is { ref?: string; $ref?: string } => {
 };
 
 const hasAdditionalProperties = (
-  obj: unknown
+  obj: unknown,
 ): obj is { additionalProperties?: unknown } => {
   return (
     !!obj &&
@@ -47,7 +47,7 @@ const hasAdditionalProperties = (
 
 export const updateApiRefs = (
   obj: unknown | Record<string, unknown>,
-  restApi: string
+  restApi: string,
 ): void => {
   if (typeof obj !== 'object' || obj === null) return;
   if (hasRef(obj) && obj.$ref) {
@@ -81,33 +81,39 @@ export const apiToSpec = (obj: unknown | Record<string, unknown>): void => {
 export const getSchemas = (
   tsconfigPath: string,
   modelPath: string,
-  restApi: string
+  restApi: string,
 ): { [key: string]: ModelOptions } => {
   // get all the interface file paths
   const filePaths: string[] = readdirSync(modelPath).map((file) =>
-    pathJoin(modelPath, file)
+    pathJoin(modelPath, file),
   );
 
   const interfaces = filePaths
     .map((filePath) => getConfig(tsconfigPath, filePath))
     .map((config) => createGenerator(config).createSchema(config.type))
-    .reduce((p, schema): { [key: string]: ModelOptions } => {
-      const processedSchemas: { [key: string]: ModelOptions } = Object.keys(
-        schema.definitions as { definitions: Record<string, unknown> }
-      ).reduce((processed, def) => {
-        const schemaDefinition = (
-          schema as { definitions: Record<string, JsonSchema> }
-        ).definitions[def];
+    .reduce(
+      (p, schema): { [key: string]: ModelOptions } => {
+        const processedSchemas: { [key: string]: ModelOptions } = Object.keys(
+          schema.definitions as { definitions: Record<string, unknown> },
+        ).reduce(
+          (processed, def) => {
+            const schemaDefinition = (
+              schema as { definitions: Record<string, JsonSchema> }
+            ).definitions[def];
+            return {
+              ...processed,
+              [def]: interfaceTemplate(def, schemaDefinition as JsonSchema),
+            };
+          },
+          {} as { [key: string]: ModelOptions },
+        );
         return {
-          ...processed,
-          [def]: interfaceTemplate(def, schemaDefinition as JsonSchema),
+          ...p,
+          ...processedSchemas,
         };
-      }, {} as { [key: string]: ModelOptions });
-      return {
-        ...p,
-        ...processedSchemas,
-      };
-    }, {} as { [key: string]: ModelOptions });
+      },
+      {} as { [key: string]: ModelOptions },
+    );
   updateApiRefs(interfaces, restApi);
 
   return interfaces;
