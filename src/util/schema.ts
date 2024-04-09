@@ -4,7 +4,7 @@ import {
   JsonSchema,
   JsonSchemaVersion,
   ModelOptions,
-} from '@aws-cdk/aws-apigateway';
+} from 'aws-cdk-lib/aws-apigateway';
 import { createGenerator } from 'ts-json-schema-generator';
 
 const interfaceTemplate = (

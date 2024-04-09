@@ -10,9 +10,9 @@ import {
   MethodOptions,
   IModel,
   JsonSchema,
-} from '@aws-cdk/aws-apigateway';
-import { Function as LambdaFunction } from '@aws-cdk/aws-lambda';
-import { Construct } from '@aws-cdk/core';
+} from 'aws-cdk-lib/aws-apigateway';
+import { Function as LambdaFunction } from 'aws-cdk-lib/aws-lambda';
+import { Construct } from 'constructs';
 import { getSchemas, apiToSpec } from './util/schema';
 
 export interface CustomMethodResponse {
