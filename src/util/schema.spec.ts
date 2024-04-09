@@ -1,13 +1,5 @@
 import * as path from 'path';
-import {
-  JsonSchema,
-  JsonSchemaType,
-  // JsonSchemaVersion,
-} from 'aws-cdk-lib/aws-apigateway';
-import * as fs from 'fs-extra';
-// import * as sinon from 'sinon';
-// import { Config, createGenerator } from 'ts-json-schema-generator';
-// import * as schema from './schema';
+import { JsonSchema, JsonSchemaType } from 'aws-cdk-lib/aws-apigateway';
 import {
   apiToSpec,
   getConfig,
@@ -273,35 +265,9 @@ describe('apiToSpec', () => {
 });
 
 describe('getSchemas', () => {
-  const tsconfigPath = 'tsconfig.dev.json';
+  const tsconfigPath = path.join(__dirname, '..', '..', 'tsconfig.dev.json');
+  const modelsPath = path.join(__dirname, '..', 'models');
   const restApi = 'myRestApi';
-  const rootTmpPath = '/tmp/aws-construct-openapi';
-  const tmpPath = `${rootTmpPath}/src/models`;
-
-  beforeAll(() => {
-    const modelsPath = path.join(__dirname, '..', 'models');
-    fs.mkdirSync(tmpPath, { recursive: true });
-    fs.copyFileSync(
-      path.join(modelsPath, 'basic.ts'),
-      path.join(tmpPath, 'basic.ts'),
-    );
-    fs.copyFileSync(
-      path.join(modelsPath, 'advanced.ts'),
-      path.join(tmpPath, 'advanced.ts'),
-    );
-    fs.copyFileSync(
-      path.join(modelsPath, 'response.ts'),
-      path.join(tmpPath, 'response.ts'),
-    );
-    fs.copyFileSync(
-      path.join(__dirname, '..', '..', 'tsconfig.dev.json'),
-      path.join(rootTmpPath, 'tsconfig.dev.json'),
-    );
-  });
-
-  afterAll(() => {
-    fs.removeSync(rootTmpPath);
-  });
 
   it('should return the correct schemas', () => {
     const expectedSchemas = {
@@ -353,7 +319,7 @@ describe('getSchemas', () => {
       },
     };
 
-    const result = getSchemas(tsconfigPath, tmpPath, restApi);
+    const result = getSchemas(tsconfigPath, modelsPath, restApi);
 
     expect(result).toEqual(expectedSchemas);
   });
