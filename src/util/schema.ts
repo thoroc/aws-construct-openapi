@@ -7,6 +7,13 @@ import {
 } from 'aws-cdk-lib/aws-apigateway';
 import { createGenerator } from 'ts-json-schema-generator';
 
+/**
+ * Generates a model options object for a given interface name and schema properties.
+ *
+ * @param interfaceName - The name of the interface.
+ * @param schemaProps - The JSON schema properties.
+ * @returns The model options object.
+ */
 export const interfaceTemplate = (
   interfaceName: string,
   schemaProps: JsonSchema,
@@ -20,12 +27,24 @@ export const interfaceTemplate = (
   },
 });
 
+/**
+ * Retrieves the configuration object for the given tsconfig and path.
+ *
+ * @param tsconfig - The path to the tsconfig file.
+ * @param path - The path to the file.
+ * @returns The configuration object.
+ */
 export const getConfig = (tsconfig: string, path: string) => ({
   path,
   tsconfig,
   type: '*',
 });
 
+/**
+ * Checks if the given object has a reference property.
+ * @param obj - The object to check.
+ * @returns A boolean indicating whether the object has a reference property.
+ */
 export const hasRef = (
   obj: unknown,
 ): obj is { ref?: string; $ref?: string } => {
@@ -37,6 +56,12 @@ export const hasRef = (
   );
 };
 
+/**
+ * Checks if an object has additional properties.
+ *
+ * @param obj - The object to check.
+ * @returns A boolean indicating whether the object has additional properties.
+ */
 export const hasAdditionalProperties = (
   obj: unknown,
 ): obj is { additionalProperties?: unknown } => {
@@ -47,6 +72,15 @@ export const hasAdditionalProperties = (
   );
 };
 
+/**
+ * Updates the API references in the given object by replacing the $ref property with a ref property
+ * that contains the updated URL.
+ * Additionally, removes the additionalProperties property from the object.
+ * Recursively updates the references in nested objects.
+ *
+ * @param obj - The object to update the API references in.
+ * @param restApi - The ID of the REST API.
+ */
 export const updateApiRefs = (
   obj: unknown | Record<string, unknown>,
   restApi: string,
@@ -68,6 +102,10 @@ export const updateApiRefs = (
   });
 };
 
+/**
+ * Converts the API object to a specification object.
+ * @param obj - The API object to convert.
+ */
 export const apiToSpec = (obj: unknown | Record<string, unknown>): void => {
   if (typeof obj !== 'object' || obj === null) return;
   if (hasRef(obj) && obj.ref) {
@@ -80,6 +118,14 @@ export const apiToSpec = (obj: unknown | Record<string, unknown>): void => {
   });
 };
 
+/**
+ * Retrieves the schemas for the specified REST API.
+ *
+ * @param tsconfigPath - The path to the tsconfig.json file.
+ * @param modelPath - The path to the directory containing the model files.
+ * @param restApi - The name of the REST API.
+ * @returns An object containing the schemas for the REST API.
+ */
 export const getSchemas = (
   tsconfigPath: string,
   modelPath: string,
