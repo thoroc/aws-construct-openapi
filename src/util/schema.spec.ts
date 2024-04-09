@@ -1,5 +1,6 @@
 import { JsonSchema, JsonSchemaType } from 'aws-cdk-lib/aws-apigateway';
 import {
+  apiToSpec,
   getConfig,
   hasAdditionalProperties,
   hasRef,
@@ -210,5 +211,53 @@ describe('updateApiRefs', () => {
     updateApiRefs(obj, restApi);
 
     expect(obj).toBeNull();
+  });
+});
+
+describe('apiToSpec', () => {
+  it('should update the $ref property and delete the ref property', () => {
+    const obj = {
+      ref: 'someRef',
+    };
+
+    apiToSpec(obj);
+
+    expect(obj).toEqual({
+      $ref: '#/components/schemas/someRef',
+    });
+  });
+
+  it('should not modify the object if it is not an object', () => {
+    const obj = 'notAnObject';
+
+    apiToSpec(obj);
+
+    expect(obj).toBe('notAnObject');
+  });
+
+  it('should not modify the object if it is null', () => {
+    const obj = null;
+
+    apiToSpec(obj);
+
+    expect(obj).toBeNull();
+  });
+
+  it('should recursively update the $ref property and delete the ref property', () => {
+    const obj = {
+      ref: 'someRef',
+      nested: {
+        ref: 'nestedRef',
+      },
+    };
+
+    apiToSpec(obj);
+
+    expect(obj).toEqual({
+      $ref: '#/components/schemas/someRef',
+      nested: {
+        $ref: '#/components/schemas/nestedRef',
+      },
+    });
   });
 });
