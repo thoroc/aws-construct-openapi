@@ -65,8 +65,7 @@
   },
   "peerDependencies": {
     "aws-cdk-lib": "^2.136.0",
-    "constructs": "^10.0.5",
-    "ts-json-schema-generator": "^1.5.1"
+    "constructs": "^10.0.5"
   },
   "dependencies": {
     "aws-cdk-lib": "^2.1.0",
@@ -75,7 +74,8 @@
     "ts-json-schema-generator": "^1.5.1"
   },
   "bundledDependencies": [
-    "openapi-types"
+    "openapi-types",
+    "ts-json-schema-generator"
   ],
   "keywords": [
     "api",

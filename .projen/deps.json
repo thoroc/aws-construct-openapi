@@ -121,6 +121,10 @@
       "type": "bundled"
     },
     {
+      "name": "ts-json-schema-generator",
+      "type": "bundled"
+    },
+    {
       "name": "aws-cdk-lib",
       "version": "^2.136.0",
       "type": "peer"
@@ -131,19 +135,11 @@
       "type": "peer"
     },
     {
-      "name": "ts-json-schema-generator",
-      "type": "peer"
-    },
-    {
       "name": "aws-cdk-lib",
       "type": "runtime"
     },
     {
       "name": "constructs",
-      "type": "runtime"
-    },
-    {
-      "name": "ts-json-schema-generator",
       "type": "runtime"
     }
   ],

@@ -269,7 +269,7 @@
           "exec": "yarn install --check-files"
         },
         {
-          "exec": "yarn upgrade @types/fs-extra @types/jest @types/node @types/sinon @typescript-eslint/eslint-plugin @typescript-eslint/parser aws-cdk-lib eslint-config-prettier eslint-import-resolver-typescript eslint-plugin-import eslint-plugin-prettier eslint fs-extra jest jest-junit jsii-diff jsii-docgen jsii-pacmak jsii-rosetta jsii prettier projen sinon standard-version ts-jest ts-node typescript openapi-types constructs ts-json-schema-generator"
+          "exec": "yarn upgrade @types/fs-extra @types/jest @types/node @types/sinon @typescript-eslint/eslint-plugin @typescript-eslint/parser aws-cdk-lib eslint-config-prettier eslint-import-resolver-typescript eslint-plugin-import eslint-plugin-prettier eslint fs-extra jest jest-junit jsii-diff jsii-docgen jsii-pacmak jsii-rosetta jsii prettier projen sinon standard-version ts-jest ts-node typescript openapi-types ts-json-schema-generator constructs"
         },
         {
           "exec": "npx projen"
