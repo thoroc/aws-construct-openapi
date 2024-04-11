@@ -142,7 +142,7 @@ export class OpenApiConstruct extends Construct {
     }
   }
 
-  addValidator(key: string, params: boolean, body: boolean): void {
+  addValidator(key: string, params: boolean, body: boolean): undefined | void {
     if (Object.keys(this.validators).includes(key)) {
       return;
     }
@@ -152,7 +152,7 @@ export class OpenApiConstruct extends Construct {
     });
   }
 
-  addModel(modelName: string, modelSchema: ModelOptions): void {
+  addModel(modelName: string, modelSchema: ModelOptions): undefined | void {
     if (Object.keys(this.models).includes(modelName)) {
       return;
     }

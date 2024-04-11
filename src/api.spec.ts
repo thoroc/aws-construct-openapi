@@ -1,62 +1,139 @@
+import fs from 'fs';
 import path from 'path';
 import { App, Stack } from 'aws-cdk-lib';
-// import { RequestValidator } from 'aws-cdk-lib/aws-apigateway';
+import { Model, RequestValidator } from 'aws-cdk-lib/aws-apigateway';
+import { Code, Function, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { OpenApiConstruct } from './api';
 
-describe('Api', () => {
-  it('passes', () => {
-    expect(true).toBe(true);
-  });
-
-  let app: App;
-  let stack: Stack;
-  const tsconfigPath = path.join(__dirname, '..', 'tsconfig.dev.json');
+describe('OpenApiConstruct', () => {
+  let openApi: OpenApiConstruct;
 
   beforeEach(() => {
-    app = new App();
-    stack = new Stack(app, 'testStack');
+    const app = new App();
+    const stack = new Stack(app, 'TestStack');
+    openApi = new OpenApiConstruct(stack, 'testId', {
+      apiProps: {},
+      tsconfigPath: path.join(__dirname, '..', 'tsconfig.dev.json'),
+      models: path.join(__dirname, 'models'),
+    });
   });
 
-  describe('OpenApiConstruct', () => {
-    it('should add a request validator if the key does not exist', () => {
-      // Arrange
-      const api = new OpenApiConstruct(stack, 'testApi', {
-        tsconfigPath: tsconfigPath,
-        apiProps: {},
-        models: 'src/models',
-      });
-      const key = 'validatorKey';
-      const params = true;
-      const body = true;
+  it('should add a validator', () => {
+    // Arrange
 
-      jest.spyOn(api.restApi, 'addRequestValidator');
+    // Act
+    const returnedValue = openApi.addValidator('testValidator', true, true);
 
-      // Act
-      api.addValidator(key, params, body);
+    // Assert
+    expect(returnedValue).toBeUndefined();
+    expect(Object.keys(openApi.validators)).toContain('testValidator');
+    expect(Object.keys(openApi.validators).length).toBe(1);
+  });
 
-      // Assert
-      expect(api.validators[key]).toBeDefined();
-      expect(api.restApi.addRequestValidator).toHaveBeenCalledWith(key, {
-        validateRequestBody: body,
-        validateRequestParameters: params,
-      });
+  it('should not add a validator if it already exists', () => {
+    // Arrange
+    const validator = new RequestValidator(openApi, 'testValidator', {
+      restApi: openApi.restApi,
+    });
+    openApi.validators.testValidator = validator;
+
+    // Act
+    const returnedValue = openApi.addValidator('testValidator', true, true);
+
+    // Assert
+    expect(returnedValue).toBeUndefined();
+    expect(Object.keys(openApi.validators)).toContain('testValidator');
+    expect(Object.keys(openApi.validators).length).toBe(1);
+    expect(openApi.validators.testValidator).toBe(validator);
+  });
+
+  it('should add a model', () => {
+    // Arrange
+
+    // Act
+    const returnedValue = openApi.addModel('testModel', {
+      modelName: 'TestModel',
+      schema: {},
     });
 
-    // it('should not add a request validator if the key already exists', () => {
-    //   const api = new OpenApiConstruct(stack, 'testApi', {
-    //     tsconfigPath: tsconfigPath,
-    //     apiProps: {},
-    //     models: 'src/models',
-    //   });
-    //   const key = 'existingKey';
-    //   const params = false;
-    //   const body = false;
-    //   api.validators[key] = new RequestValidator(stack, 'existingValidator', {
-    //     restApi: api.restApi,
-    //   });
-    //   api.addValidator(key, params, body);
-    //   expect(api.validators[key]).toBe('existingValidator');
-    //   expect(api.restApi.addRequestValidator).not.toHaveBeenCalled();
-    // });
+    // Assert
+    expect(returnedValue).toBeUndefined();
+    expect(Object.keys(openApi.models)).toContain('testModel');
+    expect(Object.keys(openApi.models).length).toBe(1);
+  });
+
+  it('should not add a model if it already exists', () => {
+    // Arrange
+    const model = new Model(openApi, 'testModel', {
+      restApi: openApi.restApi,
+      schema: {},
+    });
+    openApi.models.testModel = model;
+
+    // Act
+    const returnedValue = openApi.addModel('testModel', {
+      modelName: 'TestModel',
+      schema: {},
+    });
+
+    // Assert
+    expect(returnedValue).toBeUndefined();
+    expect(Object.keys(openApi.models)).toContain('testModel');
+    expect(Object.keys(openApi.models).length).toBe(1);
+    expect(openApi.models.testModel).toBe(model);
+  });
+
+  it('should add resources for a path', () => {
+    // Arrange
+
+    // Act
+    openApi.addResourcesForPath('/test/path');
+
+    // Assert
+    expect(Object.keys(openApi.resources)).toContain('/test');
+    expect(Object.keys(openApi.resources)).toContain('/test/path');
+  });
+
+  it('should add an endpoint', () => {
+    // Arrange
+
+    // Act
+    openApi.addEndpoint('/test/path', 'GET', {
+      requestModels: {},
+      requiredParameters: [],
+      lambda: new Function(openApi, 'testFunction', {
+        runtime: Runtime.NODEJS_LATEST,
+        handler: 'index.handler',
+        code: Code.fromInline(
+          'exports.handler = async () => ({ statusCode: 200 });',
+        ),
+      }),
+      methodResponses: [],
+    });
+
+    // Assert
+    expect(Object.keys(openApi.openApiSpec.paths)).toContain('/test/path');
+    expect(Object.keys(openApi.openApiSpec.paths['/test/path'])).toContain(
+      'get',
+    );
+  });
+
+  it('should generate the OpenAPI spec', () => {
+    // Arrange
+    const tempPath = path.join(__dirname, 'test-data');
+
+    fs.mkdirSync(tempPath, { recursive: true });
+    const outputPath = path.join(tempPath, 'openapi.json');
+
+    // Act
+    const openApiSpec = openApi.generateOpenApiSpec(outputPath);
+
+    // Assert
+    expect(openApiSpec.openapi).toBe('3.0.1');
+    expect(openApiSpec.info.title).toBe('testId');
+    expect(openApiSpec.info.version).toBeDefined();
+    // Add more assertions as needed
+
+    fs.rmSync(tempPath, { recursive: true });
   });
 });
