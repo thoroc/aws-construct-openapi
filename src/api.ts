@@ -11,77 +11,11 @@ import {
   IModel,
   JsonSchema,
 } from 'aws-cdk-lib/aws-apigateway';
-import { Function as LambdaFunction } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
+import { OpenApiPathProps } from './path';
+import { OpenApiRequestBody } from './request-body';
+import { OpenApiSpec } from './spec';
 import { getSchemas, apiToSpec } from './util/schema';
-
-export interface CustomMethodResponse {
-  readonly statusCode: string;
-  readonly responseParameters: {
-    [key: string]: boolean;
-  };
-  readonly responseModels: {
-    [key: string]: string;
-  };
-}
-
-export interface OpenApiPathProps {
-  readonly lambda: LambdaFunction;
-  readonly requiredParameters: string[];
-  readonly requestModels: { [key: string]: string };
-  readonly methodResponses: CustomMethodResponse[];
-}
-
-export interface OpenApiRequestBody {
-  readonly content: { [key: string]: { [key: string]: { $ref: string } } };
-  readonly required: boolean;
-}
-
-export interface OpenApiMethod {
-  readonly parameters: {
-    name: string;
-    in: string;
-    required: boolean;
-    schema: { type: string };
-  }[];
-  readonly requestBody?: OpenApiRequestBody;
-  readonly responses: {
-    [key: string]: {
-      description: string;
-      headers: Record<string, unknown>;
-      content: Record<string, unknown>;
-    };
-  };
-  readonly security: { [key: string]: [] }[];
-}
-
-export interface OpenApiSpec {
-  readonly openapi: string;
-  readonly info: { title: string; version: string };
-  readonly paths: {
-    [key: string]: {
-      [key: string]: OpenApiMethod;
-    };
-  };
-  readonly components: {
-    schemas: {
-      [key: string]: {
-        title: string;
-        required?: string[];
-        type: string;
-        properties: JsonSchema['properties'];
-      };
-    };
-    securitySchemes: {
-      [key: string]: {
-        type: 'apiKey';
-        name: 'Authorization';
-        in: 'header';
-        'x-amazon-apigateway-authtype': 'custom';
-      };
-    };
-  };
-}
 
 export interface OpenApiProps {
   readonly tsconfigPath: string;
