@@ -1,12 +1,7 @@
 import { awscdk } from 'projen';
 import { TrailingComma } from 'projen/lib/javascript';
 
-const dependencies = [
-  'constructs',
-  'openapi-types',
-  'ts-json-schema-generator',
-  'aws-cdk-lib',
-];
+const dependencies = ['constructs', 'ts-json-schema-generator', 'aws-cdk-lib'];
 
 const project = new awscdk.AwsCdkConstructLibrary({
   name: 'aws-construct-openapi',
@@ -32,6 +27,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
     settings: { singleQuote: true, trailingComma: TrailingComma.ALL },
   },
   deps: dependencies,
+  bundledDeps: ['openapi-types'],
   peerDeps: dependencies,
   devDeps: [
     'aws-cdk-lib',
