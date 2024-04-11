@@ -1,6 +1,6 @@
-import { OpenApiRequestBody } from './request-body';
+import { OpenApiRequestBody } from './open-api-request-body';
 
-export interface OpenApiMethod {
+export interface OpenApiMethodProps {
   readonly parameters: {
     name: string;
     in: string;
@@ -15,5 +15,5 @@ export interface OpenApiMethod {
       content: Record<string, unknown>;
     };
   };
-  readonly security: { [key: string]: [] }[];
+  readonly security: { [key: string]: any[] }[];
 }

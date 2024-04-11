@@ -12,9 +12,9 @@ import {
   JsonSchema,
 } from 'aws-cdk-lib/aws-apigateway';
 import { Construct } from 'constructs';
-import { OpenApiPathProps } from './path';
-import { OpenApiRequestBody } from './request-body';
-import { OpenApiSpec } from './spec';
+import { OpenApiPathProps } from './open-api-path';
+import { OpenApiRequestBody } from './open-api-request-body';
+import { OpenApiSpecProps } from './open-api-spec';
 import { getSchemas, apiToSpec } from './util/schema';
 
 export interface OpenApiProps {
@@ -37,7 +37,7 @@ export class OpenApiConstruct extends Construct {
   schemas: {
     [key: string]: ModelOptions;
   };
-  openApiSpec: OpenApiSpec;
+  openApiSpec: OpenApiSpecProps;
 
   constructor(scope: Construct, id: string, props: OpenApiProps) {
     super(scope, id);
@@ -77,7 +77,7 @@ export class OpenApiConstruct extends Construct {
     }
   }
 
-  addValidator(key: string, params: boolean, body: boolean): undefined | void {
+  addValidator(key: string, params: boolean, body: boolean) {
     if (Object.keys(this.validators).includes(key)) {
       return;
     }
@@ -87,11 +87,11 @@ export class OpenApiConstruct extends Construct {
     });
   }
 
-  addModel(modelName: string, modelSchema: ModelOptions): undefined | void {
-    if (Object.keys(this.models).includes(modelName)) {
+  addModel(name: string, modelSchema: ModelOptions) {
+    if (Object.keys(this.models).includes(name)) {
       return;
     }
-    this.models[modelName] = this.restApi.addModel(
+    this.models[name] = this.restApi.addModel(
       (modelSchema as { modelName: string }).modelName,
       modelSchema as ModelOptions,
     );
@@ -149,28 +149,34 @@ export class OpenApiConstruct extends Construct {
       validateBody ? 'Body' : ''
     }`;
     this.addValidator(validatorName, validateParams, validateBody);
-    validator.requestValidator = this.validators[validatorName];
-
-    this.openApiSpec.paths[path][method.toLowerCase()] = {
-      parameters: parameters.map((pathParam) => ({
-        name: pathParam,
-        in: 'path',
-        required: pathProps.requiredParameters.includes(pathParam),
-        schema: {
-          type: 'string',
-        },
-      })),
-      responses: {},
-      security: Object.keys(this.openApiSpec.components.securitySchemes).map(
-        (security) => ({
-          [security]: [],
-        }),
-      ),
-    };
+    const currentPathMethodParameters = parameters.map((pathParam) => ({
+      name: pathParam,
+      in: 'path',
+      required: pathProps.requiredParameters.includes(pathParam),
+      schema: {
+        type: 'string',
+      },
+    }));
+    const currrentPathMethodSecurity = Object.keys(
+      this.openApiSpec.components.securitySchemes,
+    ).map((security) => ({
+      [security]: [],
+    }));
     if (validateBody) {
-      this.openApiSpec.paths[path][method.toLowerCase()].requestBody = {
-        content: {},
-        required: true,
+      this.openApiSpec.paths[path][method.toLowerCase()] = {
+        parameters: currentPathMethodParameters,
+        responses: {},
+        requestBody: {
+          content: {},
+          required: true,
+        },
+        security: currrentPathMethodSecurity,
+      };
+    } else {
+      this.openApiSpec.paths[path][method.toLowerCase()] = {
+        parameters: currentPathMethodParameters,
+        responses: {},
+        security: currrentPathMethodSecurity,
       };
     }
 
@@ -274,7 +280,7 @@ export class OpenApiConstruct extends Construct {
     );
   }
 
-  generateOpenApiSpec(outputPath: string): OpenApiSpec {
+  generateOpenApiSpec(outputPath: string): OpenApiSpecProps {
     apiToSpec(this.openApiSpec);
     writeFileSync(outputPath, JSON.stringify(this.openApiSpec, null, 2));
     return this.openApiSpec;

@@ -1,12 +1,15 @@
 import { JsonSchema } from 'aws-cdk-lib/aws-apigateway';
-import { OpenApiMethod } from './method';
+import { OpenApiMethodProps } from './open-api-method';
 
-export interface OpenApiSpec {
+type InfoTitle = string;
+type InfoVersion = string;
+
+export interface OpenApiSpecProps {
   readonly openapi: string;
-  readonly info: { title: string; version: string };
+  readonly info: Record<InfoTitle, InfoVersion>;
   readonly paths: {
     [key: string]: {
-      [key: string]: OpenApiMethod;
+      [key: string]: OpenApiMethodProps;
     };
   };
   readonly components: {
