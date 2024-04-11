@@ -98,17 +98,24 @@ export class OpenApiConstruct extends Construct {
     const modelProps = (
       modelSchema.schema as { properties: JsonSchema['properties'] }
     ).properties;
-    this.openApiSpec.components.schemas[
-      (modelSchema as { modelName: string }).modelName
-    ] = {
-      title: (modelSchema as { modelName: string }).modelName,
-      type: 'object',
-      properties: modelProps,
-    };
+
     if (modelSchema.schema.required && modelSchema.schema.required.length > 0) {
       this.openApiSpec.components.schemas[
         (modelSchema as { modelName: string }).modelName
-      ].required = modelSchema.schema.required;
+      ] = {
+        title: (modelSchema as { modelName: string }).modelName,
+        type: 'object',
+        properties: modelProps,
+        required: modelSchema.schema.required,
+      };
+    } else {
+      this.openApiSpec.components.schemas[
+        (modelSchema as { modelName: string }).modelName
+      ] = {
+        title: (modelSchema as { modelName: string }).modelName,
+        type: 'object',
+        properties: modelProps,
+      };
     }
   }
 
