@@ -16,53 +16,54 @@ import { Construct } from 'constructs';
 import { getSchemas, apiToSpec } from './util/schema';
 
 export interface CustomMethodResponse {
-  statusCode: string;
-  responseParameters: {
+  readonly statusCode: string;
+  readonly responseParameters: {
     [key: string]: boolean;
   };
-  responseModels: {
+  readonly responseModels: {
     [key: string]: string;
   };
 }
 
-interface OpenApiPathProps {
-  lambda: LambdaFunction;
-  requiredParameters: string[];
-  requestModels: { [key: string]: string };
-  methodResponses: CustomMethodResponse[];
+export interface OpenApiPathProps {
+  readonly lambda: LambdaFunction;
+  readonly requiredParameters: string[];
+  readonly requestModels: { [key: string]: string };
+  readonly methodResponses: CustomMethodResponse[];
 }
 
-interface OpenApiRequestBody {
-  content: { [key: string]: { [key: string]: { $ref: string } } };
-  required: boolean;
+export interface OpenApiRequestBody {
+  readonly content: { [key: string]: { [key: string]: { $ref: string } } };
+  readonly required: boolean;
 }
-interface OpenApiMethod {
-  parameters: {
+
+export interface OpenApiMethod {
+  readonly parameters: {
     name: string;
     in: string;
     required: boolean;
     schema: { type: string };
   }[];
-  requestBody?: OpenApiRequestBody;
-  responses: {
+  readonly requestBody?: OpenApiRequestBody;
+  readonly responses: {
     [key: string]: {
       description: string;
       headers: Record<string, unknown>;
       content: Record<string, unknown>;
     };
   };
-  security: { [key: string]: [] }[];
+  readonly security: { [key: string]: [] }[];
 }
 
 export interface OpenApiSpec {
-  openapi: string;
-  info: { title: string; version: string };
-  paths: {
+  readonly openapi: string;
+  readonly info: { title: string; version: string };
+  readonly paths: {
     [key: string]: {
       [key: string]: OpenApiMethod;
     };
   };
-  components: {
+  readonly components: {
     schemas: {
       [key: string]: {
         title: string;
@@ -83,9 +84,9 @@ export interface OpenApiSpec {
 }
 
 export interface OpenApiProps {
-  tsconfigPath: string;
-  apiProps: RestApiProps;
-  models: string;
+  readonly tsconfigPath: string;
+  readonly apiProps: RestApiProps;
+  readonly models: string;
 }
 
 export class OpenApiConstruct extends Construct {
