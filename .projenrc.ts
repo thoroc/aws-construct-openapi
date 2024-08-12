@@ -1,12 +1,7 @@
 import { awscdk } from 'projen';
-import { TrailingComma } from 'projen/lib/javascript';
+import { NodePackageManager, TrailingComma } from 'projen/lib/javascript';
 
-const dependencies = [
-  'constructs',
-  'openapi-types',
-  'ts-json-schema-generator',
-  'aws-cdk-lib',
-];
+const dependencies = ['constructs@^10.0.5', 'aws-cdk-lib@^2.1.0'];
 
 const project = new awscdk.AwsCdkConstructLibrary({
   name: 'aws-construct-openapi',
@@ -19,9 +14,13 @@ const project = new awscdk.AwsCdkConstructLibrary({
   description: 'AWS CDK Construct for OpenAPI',
 
   projenrcTs: true,
-  jsiiVersion: '~5.0.0',
+  packageManager: NodePackageManager.PNPM,
+  jsiiVersion: '~5.2.0',
   cdkVersion: '2.1.0',
   jest: true,
+  jestOptions: {
+    configFilePath: 'jest.config.json',
+  },
   eslint: true,
   eslintOptions: { dirs: ['src', 'test'], prettier: true },
   prettier: true,
@@ -29,10 +28,10 @@ const project = new awscdk.AwsCdkConstructLibrary({
     settings: { singleQuote: true, trailingComma: TrailingComma.ALL },
   },
   deps: dependencies,
+  bundledDeps: ['openapi-types', 'ts-json-schema-generator'],
   peerDeps: dependencies,
-  devDeps: ['aws-cdk-lib'],
-  // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
-  // devDeps: [],             /* Build dependencies for this module. */
+  devDeps: dependencies,
+  sampleCode: false,
   // packageName: undefined,  /* The "name" in package.json. */
 });
 project.synth();
