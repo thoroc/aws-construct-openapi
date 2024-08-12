@@ -12,10 +12,10 @@ import {
   JsonSchema,
 } from 'aws-cdk-lib/aws-apigateway';
 import { Construct } from 'constructs';
-import { OpenApiPathProps } from './open-api-path';
-import { OpenApiRequestBody } from './open-api-request-body';
-import { OpenApiSpecProps } from './open-api-spec';
-import { getSchemas, apiToSpec } from './util/schema';
+import { OpenApiPathProps } from './path';
+import { OpenApiRequestBody } from './request-body';
+import { OpenApiSpec } from './specification';
+import { getSchemas, apiToSpec } from '../util/schema';
 
 export interface OpenApiProps {
   readonly tsconfigPath: string;
@@ -25,19 +25,11 @@ export interface OpenApiProps {
 
 export class OpenApiConstruct extends Construct {
   public restApi: RestApi;
-  validators: {
-    [key: string]: RequestValidator;
-  };
-  resources: {
-    [key: string]: Resource;
-  };
-  models: {
-    [key: string]: Model;
-  };
-  schemas: {
-    [key: string]: ModelOptions;
-  };
-  openApiSpec: OpenApiSpecProps;
+  validators: Record<string, RequestValidator>;
+  resources: Record<string, Resource>;
+  models: Record<string, Model>;
+  schemas: Record<string, ModelOptions>;
+  openApiSpec: OpenApiSpec;
 
   constructor(scope: Construct, id: string, props: OpenApiProps) {
     super(scope, id);
@@ -287,7 +279,7 @@ export class OpenApiConstruct extends Construct {
     );
   }
 
-  generateOpenApiSpec(outputPath: string): OpenApiSpecProps {
+  generateOpenApiSpec(outputPath: string): OpenApiSpec {
     apiToSpec(this.openApiSpec);
     writeFileSync(outputPath, JSON.stringify(this.openApiSpec, null, 2));
     return this.openApiSpec;

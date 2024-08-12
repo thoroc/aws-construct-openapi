@@ -1,4 +1,4 @@
-import { OpenApiRequestBody } from './open-api-request-body';
+import { OpenApiRequestBody } from './request-body';
 
 export interface OpenApiMethodParameterSchemaProps {
   readonly type: string;
@@ -20,8 +20,6 @@ export interface OpenApiMethodResponseProps {
 export interface OpenApiMethodProps {
   readonly parameters: OpenApiMethodParameterProps[];
   readonly requestBody?: OpenApiRequestBody;
-  readonly responses: {
-    [key: string]: OpenApiMethodResponseProps;
-  };
-  readonly security: { [key: string]: any[] }[];
+  readonly responses: Record<string, OpenApiMethodResponseProps>;
+  readonly security: Record<string, any[]>[];
 }

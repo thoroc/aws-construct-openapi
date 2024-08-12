@@ -5,7 +5,7 @@ import {
   Runtime,
 } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
-import { OpenApiPath, OpenApiPathProps } from './open-api-path';
+import { OpenApiPath, OpenApiPathProps } from './path';
 
 describe('OpenApiPath', () => {
   let app: App;

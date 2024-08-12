@@ -3,7 +3,7 @@ import * as path from 'path';
 import { App, Stack } from 'aws-cdk-lib';
 import { Model, RequestValidator } from 'aws-cdk-lib/aws-apigateway';
 import { Code, Function, Runtime } from 'aws-cdk-lib/aws-lambda';
-import { OpenApiConstruct } from './api';
+import { OpenApiConstruct } from '.';
 
 describe('OpenApiConstruct', () => {
   let openApi: OpenApiConstruct;
@@ -11,10 +11,12 @@ describe('OpenApiConstruct', () => {
   beforeEach(() => {
     const app = new App();
     const stack = new Stack(app, 'TestStack');
+    const projectPath = process.cwd();
+
     openApi = new OpenApiConstruct(stack, 'testId', {
       apiProps: {},
-      tsconfigPath: path.join(__dirname, '..', 'tsconfig.dev.json'),
-      models: path.join(__dirname, 'models'),
+      tsconfigPath: path.join(projectPath, 'tsconfig.dev.json'),
+      models: path.join(projectPath, 'src', 'models'),
     });
   });
 

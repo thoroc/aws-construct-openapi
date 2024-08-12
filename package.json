@@ -73,6 +73,7 @@
     "openapi-types",
     "ts-json-schema-generator"
   ],
+  "pnpm": {},
   "keywords": [
     "api",
     "aws",

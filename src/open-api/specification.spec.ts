@@ -1,8 +1,8 @@
-import { OpenApiSpecProps } from './open-api-spec';
+import { OpenApiSpec } from './specification';
 
 describe('OpenApiSpecProps', () => {
   it('should have the required properties', () => {
-    const openApiSpec: OpenApiSpecProps = {
+    const openApiSpec: OpenApiSpec = {
       openapi: '1.0.0',
       info: {
         title: 'API Title',

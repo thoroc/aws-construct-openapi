@@ -1,5 +1,5 @@
 import { awscdk } from 'projen';
-import { TrailingComma } from 'projen/lib/javascript';
+import { NodePackageManager, TrailingComma } from 'projen/lib/javascript';
 
 const dependencies = ['constructs@^10.0.5', 'aws-cdk-lib@^2.1.0'];
 
@@ -14,6 +14,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   description: 'AWS CDK Construct for OpenAPI',
 
   projenrcTs: true,
+  packageManager: NodePackageManager.PNPM,
   jsiiVersion: '~5.2.0',
   cdkVersion: '2.1.0',
   jest: true,

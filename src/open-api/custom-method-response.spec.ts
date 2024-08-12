@@ -1,4 +1,4 @@
-import { CustomMethodResponse } from './open-api-custom-method-response';
+import { CustomMethodResponse } from './custom-method-response';
 
 describe('CustomMethodResponse', () => {
   it('should have the correct properties', () => {

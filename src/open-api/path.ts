@@ -1,18 +1,20 @@
 import { Function as LambdaFunction } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
-import { CustomMethodResponse } from './open-api-custom-method-response';
+import { CustomMethodResponse } from './custom-method-response';
+
+type OpenApiPathRequestModel = Record<string, string>;
 
 export interface OpenApiPathProps {
   readonly lambda: LambdaFunction;
   readonly requiredParameters: string[];
-  readonly requestModels: { [key: string]: string };
+  readonly requestModels: OpenApiPathRequestModel;
   readonly methodResponses: CustomMethodResponse[];
 }
 
 export class OpenApiPath extends Construct {
   public lambda: LambdaFunction;
   public requiredParameters: string[];
-  public requestModels: { [key: string]: string };
+  public requestModels: OpenApiPathRequestModel;
   public methodResponses: CustomMethodResponse[];
 
   constructor(context: Construct, id: string, props: OpenApiPathProps) {

@@ -3,7 +3,7 @@ import {
   OpenApiMethodParameterSchemaProps,
   OpenApiMethodProps,
   OpenApiMethodResponseProps,
-} from './open-api-method';
+} from './method';
 
 describe('OpenApiMethodParameterSchemaProps', () => {
   it('should have a type property', () => {
